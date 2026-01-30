@@ -914,129 +914,167 @@ BSPrice(\sigma) = \text{Market Price}
 with tabs[4]:
     st.subheader("Formulas & Methodology (what you code is what you plot)")
 
-    st.markdown(
-        r"""
-## Black–Scholes (European)
+    # --------------------------------------------------------
+    # Black–Scholes
+    # --------------------------------------------------------
+    st.markdown("## Black–Scholes (European)")
 
-\[
-d_1 = \frac{\ln(S/K) + (r-q+\frac12\sigma^2)T}{\sigma\sqrt{T}},\quad
-d_2 = d_1 - \sigma\sqrt{T}
-\]
+    st.latex(r"""
+    d_1 = \frac{\ln(S/K) + (r-q+\frac12\sigma^2)T}{\sigma\sqrt{T}}
+    """)
 
-**Call:**
-\[
-C = S e^{-qT}N(d_1) - K e^{-rT}N(d_2)
-\]
+    st.latex(r"""
+    d_2 = d_1 - \sigma\sqrt{T}
+    """)
 
-**Put:**
-\[
-P = K e^{-rT}N(-d_2) - S e^{-qT}N(-d_1)
-\]
+    st.markdown("**Call price**")
+    st.latex(r"""
+    C = S e^{-qT}N(d_1) - K e^{-rT}N(d_2)
+    """)
 
-### Greeks (European, analytic)
+    st.markdown("**Put price**")
+    st.latex(r"""
+    P = K e^{-rT}N(-d_2) - S e^{-qT}N(-d_1)
+    """)
 
-**Delta**
-\[
-\Delta_C = e^{-qT}N(d_1),\quad
-\Delta_P = e^{-qT}(N(d_1)-1)
-\]
+    st.divider()
 
-**Gamma**
-\[
-\Gamma = \frac{e^{-qT}\phi(d_1)}{S\sigma\sqrt{T}}
-\]
+    # --------------------------------------------------------
+    # Greeks
+    # --------------------------------------------------------
+    st.markdown("## Greeks (European, analytic)")
 
-**Vega**
-\[
-\nu = S e^{-qT}\phi(d_1)\sqrt{T}
-\]
+    st.markdown("**Delta**")
+    st.latex(r"""
+    \Delta_C = e^{-qT}N(d_1), \quad
+    \Delta_P = e^{-qT}(N(d_1)-1)
+    """)
 
-**Theta** (finance convention: \(\Theta=\partial V/\partial t\))
-\[
-\Theta_C =
--\frac{S\sigma e^{-qT}\phi(d_1)}{2\sqrt{T}}
--rK e^{-rT}N(d_2)
-+qS e^{-qT}N(d_1)
-\]
-\[
-\Theta_P =
--\frac{S\sigma e^{-qT}\phi(d_1)}{2\sqrt{T}}
-+rK e^{-rT}N(-d_2)
--qS e^{-qT}N(-d_1)
-\]
+    st.markdown("**Gamma**")
+    st.latex(r"""
+    \Gamma = \frac{e^{-qT}\phi(d_1)}{S\sigma\sqrt{T}}
+    """)
 
-**Rho**
-\[
-\rho_C = KT e^{-rT}N(d_2),\quad
-\rho_P = -KT e^{-rT}N(-d_2)
-\]
+    st.markdown("**Vega**")
+    st.latex(r"""
+    \nu = S e^{-qT}\phi(d_1)\sqrt{T}
+    """)
 
----
+    st.markdown("**Theta** (finance convention: $\\Theta = \\partial V / \\partial t$)")
+    st.latex(r"""
+    \Theta_C =
+    -\frac{S\sigma e^{-qT}\phi(d_1)}{2\sqrt{T}}
+    - rK e^{-rT}N(d_2)
+    + qS e^{-qT}N(d_1)
+    """)
 
-## Finite Difference PDE (American / European)
+    st.latex(r"""
+    \Theta_P =
+    -\frac{S\sigma e^{-qT}\phi(d_1)}{2\sqrt{T}}
+    + rK e^{-rT}N(-d_2)
+    - qS e^{-qT}N(-d_1)
+    """)
 
-Using \(\tau=T-t\) (time-to-maturity), the PDE is:
+    st.markdown("**Rho**")
+    st.latex(r"""
+    \rho_C = KT e^{-rT}N(d_2), \quad
+    \rho_P = -KT e^{-rT}N(-d_2)
+    """)
 
-\[
-\frac{\partial V}{\partial \tau}
-=
-\frac12\sigma^2 S^2 V_{SS}
-+(r-q)S V_S
--rV
-\]
+    st.divider()
 
-### Discretization grid
-\[
-S_i=i\Delta S,\quad i=0..N
-\]
-\[
-\tau_n=n\Delta\tau,\quad n=0..M
-\]
+    # --------------------------------------------------------
+    # Finite Difference PDE
+    # --------------------------------------------------------
+    st.markdown("## Finite Difference PDE (European / American)")
 
-### Central differences
-\[
-V_S \approx \frac{V_{i+1}-V_{i-1}}{2\Delta S},\quad
-V_{SS}\approx \frac{V_{i+1}-2V_i+V_{i-1}}{(\Delta S)^2}
-\]
+    st.markdown("Using time-to-maturity $\\tau = T - t$:")
 
-### Operator coefficients
-\[
-a_i = \frac12\sigma^2\frac{S_i^2}{(\Delta S)^2} - \frac{(r-q)S_i}{2\Delta S}
-\]
-\[
-b_i = -\sigma^2\frac{S_i^2}{(\Delta S)^2} - r
-\]
-\[
-c_i = \frac12\sigma^2\frac{S_i^2}{(\Delta S)^2} + \frac{(r-q)S_i}{2\Delta S}
-\]
+    st.latex(r"""
+    \frac{\partial V}{\partial \tau}
+    =
+    \frac12\sigma^2 S^2 V_{SS}
+    + (r-q)S V_S
+    - rV
+    """)
 
-### Theta-scheme time step
-\[
-(I-\theta\Delta\tau L)V^{n+1} = (I+(1-\theta)\Delta\tau L)V^n
-\]
+    st.markdown("### Discretization grid")
 
-### American constraint (early exercise)
-\[
-V^{n+1}_i \ge \Phi(S_i)
-\]
+    st.latex(r"""
+    S_i = i\Delta S, \quad i = 0,\dots,N
+    """)
 
-This becomes an LCP and we solve via **PSOR**:
-\[
-x_i^{GS}=\frac{1}{d_i}\left(rhs_i-\ell_i x_{i-1}-u_i x_{i+1}\right)
-\]
-\[
-x_i^{SOR}=x_i^{old}+\omega(x_i^{GS}-x_i^{old})
-\]
-\[
-x_i^{new}=\max(\Phi_i,\;x_i^{SOR})
-\]
+    st.latex(r"""
+    \tau_n = n\Delta\tau, \quad n = 0,\dots,M
+    """)
 
-### Greeks from the grid (American)
-- Delta/Gamma from finite differences of the final slice
-- Theta from last two time slices:
-\[
-\Theta \approx \frac{V(\tau=T-\Delta\tau)-V(\tau=T)}{\Delta\tau}
-\]
-- Vega/Rho by **bump-and-reprice** (re-solve PDE)
-"""
-    )
+    st.markdown("### Central differences")
+
+    st.latex(r"""
+    V_S \approx \frac{V_{i+1}-V_{i-1}}{2\Delta S}, \quad
+    V_{SS} \approx \frac{V_{i+1}-2V_i+V_{i-1}}{(\Delta S)^2}
+    """)
+
+    st.markdown("### Operator coefficients")
+
+    st.latex(r"""
+    a_i = \frac12\sigma^2\frac{S_i^2}{(\Delta S)^2}
+    - \frac{(r-q)S_i}{2\Delta S}
+    """)
+
+    st.latex(r"""
+    b_i = -\sigma^2\frac{S_i^2}{(\Delta S)^2} - r
+    """)
+
+    st.latex(r"""
+    c_i = \frac12\sigma^2\frac{S_i^2}{(\Delta S)^2}
+    + \frac{(r-q)S_i}{2\Delta S}
+    """)
+
+    st.markdown("### Theta-scheme time stepping")
+
+    st.latex(r"""
+    (I-\theta\Delta\tau L)V^{n+1}
+    =
+    (I+(1-\theta)\Delta\tau L)V^n
+    """)
+
+    st.markdown("### American constraint (early exercise)")
+
+    st.latex(r"""
+    V_i^{n+1} \ge \Phi(S_i)
+    """)
+
+    st.markdown("This yields a Linear Complementarity Problem solved via **PSOR**:")
+
+    st.latex(r"""
+    x_i^{GS} =
+    \frac{1}{d_i}
+    \left(
+    rhs_i - \ell_i x_{i-1} - u_i x_{i+1}
+    \right)
+    """)
+
+    st.latex(r"""
+    x_i^{SOR}
+    =
+    x_i^{old}
+    + \omega\left(x_i^{GS}-x_i^{old}\right)
+    """)
+
+    st.latex(r"""
+    x_i^{new} = \max(\Phi_i,\;x_i^{SOR})
+    """)
+
+    st.markdown("### Greeks from the grid (American)")
+
+    st.markdown("""
+    - Delta / Gamma: finite differences on the final time slice  
+    - Theta: backward difference in time  
+    - Vega / Rho: bump-and-reprice (re-solve the PDE)
+    """)
+
+    st.latex(r"""
+    \Theta \approx
+    \frac{V(\tau=T-\Delta\tau)-V(\tau=T)}{\Delta\tau}
+    """)
