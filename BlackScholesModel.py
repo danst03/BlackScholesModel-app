@@ -665,19 +665,22 @@ tabs = st.tabs(["Summary", "Greeks Curves", "Surfaces & Heatmaps", "Implied Vola
 # ============================================================
 
 with tabs[0]:
-    colA, colB = st.columns([1.2, 1.0], gap="large")
 
+    # -------------------------------
+    # Pricing + Greeks (logic unchanged)
+    # -------------------------------
     if style == ExerciseStyle.EUROPEAN and model == "Black–Scholes (Analytic)":
         bs = BlackScholesPricer()
         price0 = bs.price(opt, mkt)
         g0 = bs.greeks(opt, mkt)
         extra = {"Model Notes": "Analytic Black–Scholes"}
         model_name = "Black–Scholes (Analytic)"
-
         fdm_res = None
-
     else:
-        price0, g0, grids, fdm_res = fdm_greeks(opt, mkt, settings, compute_vega_rho=compute_vega_rho_american)
+        price0, g0, grids, fdm_res = fdm_greeks(
+            opt, mkt, settings,
+            compute_vega_rho=compute_vega_rho_american
+        )
         extra = {
             "Smax": float(fdm_res.smax),
             "dS": float(fdm_res.dS),
@@ -688,41 +691,99 @@ with tabs[0]:
         }
         model_name = "Finite Difference (Theta Scheme)"
 
-    with colA:
-        st.subheader("Key Outputs")
-        c1, c2, c3, c4, c5, c6 = st.columns(6)
-        c1.metric("Price", _fmt(price0))
-        c2.metric("Delta", _fmt(g0.delta))
-        c3.metric("Gamma", _fmt(g0.gamma))
-        c4.metric("Vega", _fmt(g0.vega))
-        c5.metric("Theta", _fmt(g0.theta))
-        c6.metric("Rho", _fmt(g0.rho))
+    # ===============================
+    # TOP ROW — FULL WIDTH GREEKS
+    # ===============================
+    st.subheader("Greeks")
 
-        st.caption("Notes: Vega/Rho are per +1.00 change (multiply by 0.01 for per 1%). Theta is per year (divide by 365 for per day).")
+    g1, g2, g3, g4, g5 = st.columns(5)
+    g1.metric("Delta", _fmt(g0.delta))
+    g2.metric("Gamma", _fmt(g0.gamma))
+    g3.metric("Vega",  _fmt(g0.vega))
+    g4.metric("Theta", _fmt(g0.theta))
+    g5.metric("Rho",   _fmt(g0.rho))
+
+    st.caption(
+        "Vega/Rho per +1.00 change (×0.01 for 1%). "
+        "Theta per year (÷365 for per day)."
+    )
+
+    st.divider()
+
+    # ===============================
+    # BELOW — TWO COLUMN LAYOUT
+    # ===============================
+    colA, colB = st.columns([1.2, 1.0], gap="large")
+
+    # -------- LEFT COLUMN --------
+    with colA:
+        st.subheader("Price")
+        st.metric("Option Price", _fmt(price0))
 
         st.subheader("Inputs & Model Settings")
         df_summary = _make_summary_table(opt, mkt, model_name, extra)
         st.dataframe(df_summary, use_container_width=True)
 
+    # -------- RIGHT COLUMN --------
     with colB:
         st.subheader("Payoff + Value vs Spot")
-        payoff_vals = np.array([opt.payoff(s) for s in S_grid_curve], dtype=float)
+
+        payoff_vals = np.array(
+            [opt.payoff(s) for s in S_grid_curve], dtype=float
+        )
 
         if style == ExerciseStyle.EUROPEAN and model == "Black–Scholes (Analytic)":
-            curve_df = _price_greeks_curve_bs(opt, mkt, S_grid_curve)
+            curve_df = _price_greeks_curve_bs(
+                opt, mkt, S_grid_curve
+            )
         else:
-            curve_df = _price_greeks_curve_fdm(opt, mkt, settings, S_grid_curve, compute_vega_rho_american)
+            curve_df = _price_greeks_curve_fdm(
+                opt, mkt, settings,
+                S_grid_curve,
+                compute_vega_rho_american
+            )
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=curve_df["Spot"], y=curve_df["Price"], mode="lines", name="Option Value"))
-        fig.add_trace(go.Scatter(x=curve_df["Spot"], y=payoff_vals, mode="lines", name="Payoff (Intrinsic)"))
-        fig.update_layout(height=420, xaxis_title="Spot", yaxis_title="Value")
+        fig.add_trace(go.Scatter(
+            x=curve_df["Spot"],
+            y=curve_df["Price"],
+            mode="lines",
+            name="Option Value"
+        ))
+        fig.add_trace(go.Scatter(
+            x=curve_df["Spot"],
+            y=payoff_vals,
+            mode="lines",
+            name="Payoff (Intrinsic)"
+        ))
+
+        fig.update_layout(
+            height=420,
+            xaxis_title="Spot",
+            yaxis_title="Value"
+        )
+
         st.plotly_chart(fig, use_container_width=True)
 
         st.subheader("Curve Table")
-        st.dataframe(curve_df.round(6), use_container_width=True)
-        st.download_button("Download Curve CSV", curve_df.to_csv(index=False).encode("utf-8"), "curve.csv", "text/csv")
+        st.dataframe(
+            curve_df.round({
+                "Price": 2,
+                "Delta": 2,
+                "Gamma": 2,
+                "Vega": 2,
+                "Theta": 2,
+                "Rho": 2
+            }),
+            use_container_width=True
+        )
 
+        st.download_button(
+            "Download Curve CSV",
+            curve_df.to_csv(index=False).encode("utf-8"),
+            file_name="curve.csv",
+            mime="text/csv"
+        )
 
 # ============================================================
 # TAB 2: Greeks Curves
